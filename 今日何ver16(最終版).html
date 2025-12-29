@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>今日は何が気になった？</title>
+  <meta name="theme-color" content="#f4ede4" />
+
+  <style>
+    :root{
+      --bg:#f4ede4;
+      --text:#3b2f2a;
+      --muted:#7a6a62;
+
+      --card:#faf7f3;
+      --line:rgba(90,60,40,.18);
+
+      --accent:#f3d6c6;
+      --support:#c7d2c2;
+
+      --danger:rgba(255,170,170,.40);
+      --radius:18px;
+      --shadow:rgba(90,60,40,.16);
+
+      --todoBorder: rgba(200,140,100,.28);
+      --todoBg: rgba(243,214,198,.10);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 900px at 20% 0%, rgba(243,214,198,.55) 0%, var(--bg) 55%) fixed,
+        radial-gradient(900px 700px at 90% 15%, rgba(199,210,194,.35) 0%, rgba(244,237,228,0) 60%) fixed,
+        var(--bg);
+      color:var(--text);
+      font-family:
+        "Hiragino Maru Gothic ProN",
+        "Hiragino Sans",
+        "Yu Gothic UI",
+        "Meiryo",
+        system-ui,
+        -apple-system,
+        "Noto Sans JP",
+        sans-serif;
+      letter-spacing:.2px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .wrap{max-width:780px;margin:0 auto;padding:18px 14px 130px}
+    header{padding:18px 6px 10px}
+    .title{font-size:22px;line-height:1.35;font-weight:700;margin:0 0 6px;letter-spacing:.4px}
+    .sub{color:var(--muted);font-size:13px;margin:0;line-height:1.7;font-weight:350;opacity:.92}
+
+    .card,.item,.modal{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 10px 24px var(--shadow), inset 0 1px 0 rgba(255,255,255,.65);
+    }
+
+    .hint{color:var(--muted);font-size:12px;line-height:1.7;font-weight:350;opacity:.92}
+    .divider{height:10px}
+    .spacer{height:14px}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .pill{
+      border:1px solid rgba(200,160,120,.45);
+      background:rgba(250,247,243,.95);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:999px;
+      font-size:14px;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .05s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+      letter-spacing:.25px;
+    }
+    .pill:active{transform:scale(.985)}
+    .pill.selected{
+      background:rgba(243,214,198,.88);
+      border-color:rgba(200,140,100,.65);
+      box-shadow:0 10px 18px rgba(90,60,40,.10);
+    }
+
+    textarea{
+      width:100%;
+      min-height:92px;
+      resize:vertical;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(250,247,243,.88);
+      color:var(--text);
+      padding:12px;
+      font-size:14px;
+      line-height:1.75;
+      letter-spacing:.2px;
+      outline:none;
+    }
+    textarea::placeholder{color:rgba(59,47,42,.45)}
+
+    .dateRow{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      padding:10px 12px;border:1px solid var(--line);
+      border-radius:14px;background:rgba(250,247,243,.88);
+    }
+    .dateRow label{font-size:12px;color:var(--muted)}
+    input[type="date"]{
+      border:1px solid rgba(90,60,40,.14);
+      background:rgba(255,255,255,.65);
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:14px;
+    }
+
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    button{
+      border:1px solid var(--line);
+      background:rgba(255,230,210,.65);
+      color:var(--text);
+      padding:11px 14px;
+      border-radius:16px;
+      font-size:14px;
+      cursor:pointer;
+      letter-spacing:.15px;
+    }
+    button.primary{
+      background:var(--accent);
+      border-color:rgba(200,140,100,.55);
+    }
+    button.danger{
+      background:var(--danger);
+      border-color:rgba(255,120,120,.20);
+    }
+    button.ghost{background:transparent}
+    button.small{padding:8px 10px;border-radius:12px;font-size:12px}
+
+    .feedback{
+      margin-top:10px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(250,247,243,.78);
+      color:rgba(59,47,42,.92);
+      font-size:14px;
+      line-height:1.7;
+      letter-spacing:.15px;
+      display:none;
+      white-space:pre-wrap;
+    }
+
+    .sectionTitle{
+      margin:16px 6px 8px;
+      font-size:13px;
+      color:rgba(59,47,42,.78);
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      letter-spacing:.2px;
+    }
+
+    .dateHeader{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid rgba(90,60,40,.14);
+      background:rgba(255,255,255,.52);
+      color:rgba(59,47,42,.88);
+      font-size:13px;
+      letter-spacing:.2px;
+      margin:10px 0 0;
+      cursor:pointer;
+      user-select:none;
+    }
+    .dateHeader .right{
+      color:rgba(59,47,42,.65);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .dateHeader .leftWrap{display:flex;align-items:center;gap:8px;}
+    .dateCaret{
+      display:inline-block;width:18px;height:18px;
+      border-radius:999px;border:1px solid rgba(90,60,40,.14);
+      background:rgba(255,255,255,.55);
+      line-height:18px;text-align:center;font-size:12px;color:rgba(59,47,42,.65);
+    }
+
+    .dateGroupItems{display:block;}
+    .dateGroupItems.collapsed{display:none;}
+
+    .list{display:flex;flex-direction:column;gap:10px}
+
+    .item{background:rgba(250,247,243,.92);padding:14px}
+    .item.selected{
+      outline:2px solid rgba(200,140,100,.25);
+      background:rgba(243,214,198,.18);
+    }
+
+    /* 未追記ログ：淡い縁取り（常時） */
+    .item.todo{
+      border-color: var(--todoBorder);
+      background: var(--todoBg);
+    }
+
+    /* 日付セクションを開いた直後の未追記：ふわっと強調 */
+    @keyframes todoPulse {
+      0%   { box-shadow: 0 0 0 rgba(200,140,100,0); }
+      55%  { box-shadow: 0 0 0 6px rgba(243,214,198,.25); }
+      100% { box-shadow: 0 0 0 rgba(200,140,100,0); }
+    }
+    .todoPulse{ animation: todoPulse 1.2s ease-out 1; }
+
+    .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .date{color:rgba(59,47,42,.92);font-weight:650;font-size:13px}
+    .tag{
+      font-size:12px;padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(90,60,40,.18);
+      background:rgba(255,255,255,.55);
+      color:rgba(59,47,42,.92);
+      letter-spacing:.25px;
+    }
+    .flag{
+      font-size:12px;padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(120,140,120,.35);
+      background:rgba(199,210,194,.55);
+      color:rgba(59,47,42,.9);
+      letter-spacing:.25px;
+    }
+
+    .text{
+      margin-top:8px;color:rgba(59,47,42,.95);font-size:14px;
+      white-space:pre-wrap;line-height:1.85;letter-spacing:.18px;font-weight:400;
+    }
+    .smalltxt{
+      margin-top:8px;color:rgba(59,47,42,.78);font-size:13px;
+      line-height:1.75;letter-spacing:.15px;font-weight:350;opacity:.92;
+      white-space:pre-wrap;
+    }
+
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .filterRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+    .footerBar{
+      position:fixed;left:0;right:0;bottom:0;
+      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(244,237,228,.92);
+      border-top:1px solid rgba(90,60,40,.16);
+      backdrop-filter: blur(6px);
+      z-index:30;
+    }
+    .footerInner{max-width:780px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .badge{
+      font-size:12px;color:rgba(59,47,42,.78);
+      padding:7px 10px;border-radius:999px;border:1px solid rgba(90,60,40,.14);
+      background:rgba(255,255,255,.55);
+      letter-spacing:.2px;
+      white-space:pre-wrap;
+      cursor:default;
+    }
+    .badge.clickable{cursor:pointer}
+
+    .toast{
+      position:fixed;left:50%;bottom:98px;transform:translateX(-50%);
+      background:rgba(59,47,42,.72);
+      border:1px solid rgba(255,255,255,.18);
+      color:rgba(255,255,255,.95);
+      padding:10px 12px;border-radius:999px;
+      font-size:13px;opacity:0;pointer-events:none;
+      transition:opacity .18s ease;
+      z-index:40;
+    }
+    .toast.show{opacity:1}
+
+    .overlay{
+      position:fixed;inset:0;
+      background:rgba(59,47,42,.22);
+      backdrop-filter: blur(4px);
+      display:none;
+      align-items:stretch;
+      justify-content:center;
+      padding:18px 14px;
+      z-index:50;
+    }
+    .overlay.show{display:flex}
+
+    .modal{
+      width:min(720px, 100%);
+      background:rgba(250,247,243,.96);
+      padding:18px;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .modalTitle{font-size:18px;font-weight:750;margin:0 0 6px;letter-spacing:.25px}
+    .modalSub{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.7;font-weight:350}
+    .hr{height:1px;background:rgba(90,60,40,.14);margin:12px 0}
+    .kicker{font-size:12px;color:rgba(59,47,42,.75);letter-spacing:.18px}
+    .bigLine{font-size:18px;line-height:1.45;letter-spacing:.25px;font-weight:700;margin:10px 0 10px;white-space:pre-wrap}
+    .bodyText{font-size:14px;line-height:1.9;letter-spacing:.15px;color:rgba(59,47,42,.94);white-space:pre-wrap;margin:0}
+    .modalActions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+    .modalTopRow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .modalCloseX{
+      border:1px solid rgba(90,60,40,.14);
+      background:rgba(255,255,255,.65);
+      padding:8px 10px;border-radius:999px;font-size:12px;cursor:pointer;white-space:nowrap;
+    }
+
+    .confirmInput{
+      width:100%;
+      border-radius:14px;
+      border:1px solid rgba(90,60,40,.18);
+      background:rgba(255,255,255,.62);
+      padding:12px;
+      font-size:14px;
+      letter-spacing:.2px;
+      outline:none;
+    }
+
+    /* スクロール後ハイライト（ふわっと） */
+    @keyframes softFlash {
+      0%   { background: rgba(243,214,198,.75); box-shadow: 0 0 0 rgba(0,0,0,0); }
+      60%  { background: rgba(243,214,198,.35); }
+      100% { background: rgba(255,255,255,.52); box-shadow: 0 0 0 rgba(0,0,0,0); }
+    }
+    .flash { animation: softFlash 1.2s ease-out 1; }
+
+    @keyframes softFlashItem {
+      0%   { background: rgba(243,214,198,.32); }
+      60%  { background: rgba(243,214,198,.18); }
+      100% { background: rgba(250,247,243,.92); }
+    }
+    .flashItem { animation: softFlashItem 1.2s ease-out 1; }
+  
+    /* ===== Mobile/Android tuning (v15) ===== */
+    button, .pill, input, textarea{
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, .pill{
+      -webkit-appearance:none;
+      appearance:none;
+    }
+
+    /* Android Chrome で fixed footer が被りやすいので下余白を増やす */
+    .wrap{ padding-bottom: 160px; }
+
+    /* 100vh の不具合対策（アドレスバー伸縮） */
+    .modal{
+      max-height: calc(100vh - 36px);
+    }
+    @supports (height: 100dvh){
+      .modal{ max-height: calc(100dvh - 36px); }
+    }
+
+    /* Safe-area（主にiOSだが、環境によってはAndroidでも） */
+    .footerBar{
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    /* 小さい画面でタグが見切れない・押しやすいように */
+    @media (max-width: 520px){
+      .wrap{ padding: 14px 12px 175px; }
+      .title{ font-size: 20px; }
+      .pill{
+        padding: 11px 14px;
+        font-size: 15px;
+        line-height: 1.2;
+      }
+      .row{ gap: 8px; }
+      button{ padding: 12px 14px; }
+      button.small{ padding: 9px 10px; font-size: 13px; }
+      .dateRow{ gap: 8px; }
+      textarea{ min-height: 104px; font-size: 15px; }
+      .footerInner{ gap: 8px; }
+      .badge{ font-size: 12px; padding: 8px 10px; }
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <h1 class="title">今日は何が気になった？</h1>
+      <p class="sub">タグだけで置いておく。あとで追記もできます。</p>
+    </header>
+
+    <section class="card" id="welcomeCard" style="display:none">
+      <div class="bigLine">今日は、気になること、ありましたか？</div>
+      <p class="bodyText">あれば、ここに置いておけます。</p>
+      <div class="spacer"></div>
+      <p class="hint">タグを選ぶだけでも構いません。</p>
+      <div class="actions">
+        <button class="primary" id="welcomeCloseBtn">はじめる</button>
+      </div>
+    </section>
+
+    <section class="card" aria-label="入力">
+      <div class="dateRow">
+        <label for="entryDate">日付</label>
+        <input type="date" id="entryDate" />
+        <span class="hint" id="dateHint"></span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="hint">タグ（まず選ぶだけ）</div>
+      <div class="divider"></div>
+      <div class="row" id="tagRow"></div>
+
+      <div class="divider"></div>
+      <p class="hint">タグを選んでから、ログに追加すると、下に表示されます。</p>
+
+      <div class="divider"></div>
+      <div class="hint">追記（ログに追加すると新規ログとして残ります）</div>
+      <div class="divider"></div>
+      <textarea id="note" maxlength="200" placeholder="置いておきたいことがあれば（空でもOK）"></textarea>
+
+      <div class="actions">
+        <button class="primary" id="saveDraftBtn">保存（下書き）</button>
+        <button class="ghost" id="commitBtn">ログに追加</button>
+        <span class="hint" id="charHint">0 / 200</span>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </section>
+
+    <div class="sectionTitle">
+      <span>ログ</span>
+      <span class="hint" id="countLabel"></span>
+    </div>
+
+    <section class="card" aria-label="フィルタ" style="margin-bottom:10px">
+      <div class="toolbar">
+        <div class="filterRow">
+          <button class="small" id="filterAllBtn">すべて</button>
+          <button class="small" id="filterTodoBtn">未追記だけ</button>
+          <button class="small" id="groupByDateBtn">日付ごと</button>
+          <span class="hint" id="filterHint"></span>
+        </div>
+        <div class="filterRow">
+          <button class="small" id="proBtn">気になりレポート（Pro）</button>
+          <button class="small" id="exportBtn">エクスポート</button>
+          <button class="small danger" id="wipeBtn">全削除</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="hint">ログをタップすると「選択中」になります（閲覧やタグ変更用）。</div>
+    </section>
+
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="footerBar">
+    <div class="footerInner">
+      <div class="badge" id="streakBadge">連続記録：0日</div>
+      <div class="badge" id="selectedBadge">選択中：なし</div>
+      <div class="badge clickable" id="encourageBadge">—</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">保存しました</div>
+
+  <div class="overlay" id="tagSelectOverlay" role="dialog" aria-modal="true" aria-label="タグ変更">
+    <div class="modal">
+      <div class="modalTitle">タグを選ぶ</div>
+      <p class="modalSub">入力しなくて大丈夫です。</p>
+      <div class="hr"></div>
+      <div class="row" id="tagSelectRow"></div>
+      <div class="modalActions">
+        <button class="ghost" id="tagSelectCancelBtn">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="proGateOverlay" role="dialog" aria-modal="true" aria-label="Pro導線">
+    <div class="modal">
+      <div class="kicker">気になりレポート（Pro）</div>
+      <div class="bigLine">今の気になり、どんな並び方をしているか見てみますか。</div>
+      <p class="bodyText">
+ここから先では、答えを出したり、良し悪しを決めたりはしません。
+
+これまで置いてきた気になりを、少し離れたところから、そっと眺めてみるだけです。
+      </p>
+
+      <div class="hr"></div>
+      <p class="bodyText"><b>この先は、気になりを少し俯瞰して見たい人向けです。</b></p>
+      <div class="divider"></div>
+      <p class="hint">今は見なくても大丈夫です。必要になったら、いつでも戻れます。</p>
+      <div class="divider"></div>
+      <p class="hint">月額 ¥200 ／ 2年目以降 ¥100　※ いつでもやめられます</p>
+
+      <div class="modalActions">
+        <button class="ghost" id="proGateBackBtn">戻る</button>
+        <button class="primary" id="proGateOpenBtn">気になりレポート（Pro）を開く</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="proReportOverlay" role="dialog" aria-modal="true" aria-label="Proレポート">
+    <div class="modal">
+      <div class="modalTopRow">
+        <div>
+          <div class="modalTitle">気になりレポート（Pro）</div>
+          <p class="modalSub">小さな引っかかりを、少し離れて眺めるためのレポート</p>
+        </div>
+        <button class="modalCloseX" id="proReportCloseTopBtn">× 閉じる</button>
+      </div>
+
+      <div class="hr"></div>
+      <pre class="bodyText" id="proReportText" style="margin:0"></pre>
+
+      <div class="hr"></div>
+      <div class="kicker">余韻</div>
+      <div class="divider"></div>
+      <p class="bodyText">
+<b>ここまで、よく眺めました。</b>
+
+今の気になりを、少し離れたところから見る時間は、それだけで十分なことがあります。
+
+何かを変えなくても、判断しなくても大丈夫です。
+
+また気になったら、いつものように、置きに来てください。
+      </p>
+
+      <div class="modalActions">
+        <button class="ghost" id="proReportCloseBtn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="subscribeOverlay" role="dialog" aria-modal="true" aria-label="Pro購入（デモ）">
+    <div class="modal">
+      <div class="modalTitle">気になりレポート（Pro）</div>
+      <p class="modalSub">（デモ）このHTML版では実課金はできません。Pro状態を切り替えて動作を確認できます。</p>
+      <div class="hr"></div>
+      <p class="bodyText">
+<b>月額 ¥200 ／ 2年目以降 ¥100</b>
+
+このアプリは、無料のままでも、きちんと使えます。
+気になりは、置いておくだけで十分な日もあります。
+      </p>
+      <div class="modalActions">
+        <button class="ghost" id="subscribeCloseBtn">いまはやめる</button>
+        <button class="primary" id="subscribeEnableBtn">（デモ）Proを有効にする</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="cancelOverlay" role="dialog" aria-modal="true" aria-label="解約（デモ）">
+    <div class="modal">
+      <div class="modalTitle">Proをやめますか？</div>
+      <p class="modalSub">（デモ）実課金はありません。文言と体験だけ確認できます。</p>
+      <div class="hr"></div>
+      <p class="bodyText">
+<b>これまで、ありがとうございました。</b>
+
+気になりレポートを使ってくださったこと、とても嬉しく思っています。
+
+このアプリは、無料のままでも、変わらず使えます。
+
+これからも、気になったときに、ふと思い出してもらえたら十分です。
+      </p>
+      <div class="modalActions">
+        <button class="ghost" id="cancelBackBtn">戻る</button>
+        <button class="danger" id="cancelConfirmBtn">（デモ）Proを無効にする</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="wipeOverlay" role="dialog" aria-modal="true" aria-label="全削除の確認">
+    <div class="modal">
+      <div class="modalTitle">全削除しますか？</div>
+      <p class="modalSub">この操作は取り消せません。まずは確認だけです。</p>
+      <div class="hr"></div>
+
+      <div id="wipeStep1">
+        <p class="bodyText">
+全ログ（タグ・本文・日付）が削除されます。
+エクスポートが必要なら、この前に行ってください。
+        </p>
+        <div class="modalActions">
+          <button class="ghost" id="wipeCancelBtn">やめる</button>
+          <button class="primary" id="wipeNextBtn">次へ</button>
+        </div>
+      </div>
+
+      <div id="wipeStep2" style="display:none">
+        <p class="bodyText">
+最終確認です。下に <b>削除</b> と入力すると、全削除ボタンが有効になります。
+        </p>
+        <div class="divider"></div>
+        <input class="confirmInput" id="wipeConfirmInput" placeholder="ここに「削除」と入力" />
+        <div class="modalActions">
+          <button class="ghost" id="wipeBackBtn">戻る</button>
+          <button class="danger" id="wipeConfirmBtn" disabled>全削除する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const TAGS = ["人","仕事","体調","気分","家族","お金","ニュース","なんとなく"];
+  const STORAGE_KEY = "kininari_final_complete_v10";
+  const PREF_KEY = "kininari_prefs_v10";
+
+  const el = {
+    tagRow: document.getElementById("tagRow"),
+    note: document.getElementById("note"),
+    saveDraftBtn: document.getElementById("saveDraftBtn"),
+    commitBtn: document.getElementById("commitBtn"),
+    feedback: document.getElementById("feedback"),
+    list: document.getElementById("list"),
+    countLabel: document.getElementById("countLabel"),
+    charHint: document.getElementById("charHint"),
+    streakBadge: document.getElementById("streakBadge"),
+    selectedBadge: document.getElementById("selectedBadge"),
+    encourageBadge: document.getElementById("encourageBadge"),
+    exportBtn: document.getElementById("exportBtn"),
+    wipeBtn: document.getElementById("wipeBtn"),
+    toast: document.getElementById("toast"),
+    filterAllBtn: document.getElementById("filterAllBtn"),
+    filterTodoBtn: document.getElementById("filterTodoBtn"),
+    groupByDateBtn: document.getElementById("groupByDateBtn"),
+    filterHint: document.getElementById("filterHint"),
+    entryDate: document.getElementById("entryDate"),
+    dateHint: document.getElementById("dateHint"),
+    proBtn: document.getElementById("proBtn"),
+    welcomeCard: document.getElementById("welcomeCard"),
+    welcomeCloseBtn: document.getElementById("welcomeCloseBtn"),
+
+    tagSelectOverlay: document.getElementById("tagSelectOverlay"),
+    tagSelectRow: document.getElementById("tagSelectRow"),
+    tagSelectCancelBtn: document.getElementById("tagSelectCancelBtn"),
+
+    proGateOverlay: document.getElementById("proGateOverlay"),
+    proGateBackBtn: document.getElementById("proGateBackBtn"),
+    proGateOpenBtn: document.getElementById("proGateOpenBtn"),
+
+    proReportOverlay: document.getElementById("proReportOverlay"),
+    proReportText: document.getElementById("proReportText"),
+    proReportCloseBtn: document.getElementById("proReportCloseBtn"),
+    proReportCloseTopBtn: document.getElementById("proReportCloseTopBtn"),
+
+    subscribeOverlay: document.getElementById("subscribeOverlay"),
+    subscribeCloseBtn: document.getElementById("subscribeCloseBtn"),
+    subscribeEnableBtn: document.getElementById("subscribeEnableBtn"),
+
+    cancelOverlay: document.getElementById("cancelOverlay"),
+    cancelBackBtn: document.getElementById("cancelBackBtn"),
+    cancelConfirmBtn: document.getElementById("cancelConfirmBtn"),
+
+    wipeOverlay: document.getElementById("wipeOverlay"),
+    wipeCancelBtn: document.getElementById("wipeCancelBtn"),
+    wipeNextBtn: document.getElementById("wipeNextBtn"),
+    wipeBackBtn: document.getElementById("wipeBackBtn"),
+    wipeConfirmInput: document.getElementById("wipeConfirmInput"),
+    wipeConfirmBtn: document.getElementById("wipeConfirmBtn"),
+  };
+
+  const pad2 = n => String(n).padStart(2,"0");
+  const toISODate = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  const toJPDate = (iso) => {
+    const [y,m,dd] = iso.split("-").map(Number);
+    return `${y}/${pad2(m)}/${pad2(dd)}`;
+  };
+  const uid = () => {
+    // Androidの一部ブラウザ/WEBVIEWでは `crypto` が未定義でスクリプトが止まることがあるため安全に生成
+    try{
+      const c = (typeof window !== "undefined") ? window.crypto : undefined;
+      if(c && typeof c.randomUUID === "function") return c.randomUUID();
+    }catch{}
+    return (Math.random().toString(16).slice(2) + "-" + Date.now().toString(16));
+  };
+
+  const loadEntries = () => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }catch{ return []; } };
+  const saveEntries = (arr) => localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+
+  const loadPrefs = () => { try{ return JSON.parse(localStorage.getItem(PREF_KEY) || "{}"); }catch{ return {}; } };
+  const savePrefs = (obj) => localStorage.setItem(PREF_KEY, JSON.stringify(obj));
+
+  let entries = loadEntries();
+  let prefs = loadPrefs();
+
+  let selectedId = null;
+  let filterMode = "all";
+  let groupByDate = false;
+  let tagChangeTargetId = null;
+  let selectedTag = null;
+
+  // 折りたたみ状態（true=折りたたみ）
+  let collapsedByDate = prefs.collapsedByDate || {};
+  function saveCollapsed(){
+    prefs.collapsedByDate = collapsedByDate;
+    savePrefs(prefs);
+  }
+  function isCollapsed(dateIso){ return !!collapsedByDate[dateIso]; }
+  function setCollapsed(dateIso, collapsed){
+    collapsedByDate[dateIso] = !!collapsed;
+    saveCollapsed();
+  }
+
+  function showToast(msg){
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    setTimeout(()=>el.toast.classList.remove("show"), 1200);
+  }
+  function setOverlay(overlayEl, on){
+    overlayEl.classList.toggle("show", !!on);
+  }
+
+  function updateChar(){
+    el.charHint.textContent = `${el.note.value.length} / 200`;
+  }
+  el.note.addEventListener("input", updateChar);
+
+  function updateTagUI(){
+    [...el.tagRow.children].forEach(btn => {
+      btn.classList.toggle("selected", btn.dataset.tag === selectedTag);
+    });
+  }
+
+  function clampDateRange(){
+    const today = new Date();
+    const min = new Date(today);
+    min.setFullYear(today.getFullYear() - 5);
+
+    el.entryDate.max = toISODate(today);
+    el.entryDate.min = toISODate(min);
+
+    if(!el.entryDate.value) el.entryDate.value = toISODate(today);
+
+    if(el.entryDate.value < el.entryDate.min) el.entryDate.value = el.entryDate.min;
+    if(el.entryDate.value > el.entryDate.max) el.entryDate.value = el.entryDate.max;
+
+    el.dateHint.textContent = `（${toJPDate(el.entryDate.min)}〜${toJPDate(el.entryDate.max)}）`;
+  }
+
+  function selectedEntryDateISO(){
+    return el.entryDate.value || toISODate(new Date());
+  }
+
+  function addEntry(tag, text){
+    const d = selectedEntryDateISO();
+    const e = { id: uid(), date: d, tag, text: text || "", createdAt: Date.now() };
+    entries.push(e);
+    saveEntries(entries);
+    selectedId = e.id;
+    return e;
+  }
+
+  function getSelected(){
+    if(!selectedId) return null;
+    return entries.find(e => e.id === selectedId) || null;
+  }
+
+  function select(id){
+    selectedId = id;
+    const e = getSelected();
+    el.selectedBadge.textContent = e ? `選択中：${toJPDate(e.date)} / ${e.tag}` : "選択中：なし";
+  }
+
+  function updateEntry(id, patch){
+    const idx = entries.findIndex(e => e.id === id);
+    if(idx < 0) return;
+    entries[idx] = {...entries[idx], ...patch};
+    saveEntries(entries);
+  }
+
+  function deleteEntry(id){
+    entries = entries.filter(e => e.id !== id);
+    saveEntries(entries);
+    if(selectedId === id) selectedId = null;
+  }
+
+  function calcStreak(){
+    const today = new Date();
+    const dates = new Set(entries.map(e=>e.date));
+    let streak = 0;
+    for(let i=0;i<365;i++){
+      const d = new Date(today); d.setDate(today.getDate()-i);
+      const iso = toISODate(d);
+      if(dates.has(iso)) streak++;
+      else break;
+    }
+    return streak;
+  }
+
+  function feedbackFor(tag, text){
+    const t = (text || "").trim();
+    const hasText = t.length > 0;
+
+    if(tag === "なんとなく" && !hasText)
+      return "まだ言葉にならないままで大丈夫です。今日はここに置いておきましょう。";
+    if(tag === "体調")
+      return "体のサインに気づけたのは十分です。今夜は少し“ゆるめる”方向で。";
+    if(tag === "気分")
+      return "気分に名前がつかなくても大丈夫。今のまま、そっと眺めておきましょう。";
+    if(tag === "人")
+      return "人に関する引っかかりは、あとから意味が見えてくることもあります。今日は触れずに置いておいてOK。";
+    if(tag === "仕事")
+      return "仕事の気になりは、明日の自分が拾ってくれることもあります。今夜は“保留”で充分です。";
+    if(tag === "お金")
+      return "お金の気になりは、安心を大事にしているサインかもしれません。今夜は落ち着く方を選びましょう。";
+    if(tag === "ニュース")
+      return "外の刺激が多い日は、心が少しざわつきやすいですね。今日は情報を増やさなくて大丈夫。";
+    if(tag === "家族")
+      return "近い関係ほど、言葉にしにくい気になりが残ります。今夜は“そのまま”でいい日です。";
+    if(hasText && t.length <= 20)
+      return "短くても十分です。今日の気になりとして、きれいに残せました。";
+    if(hasText && t.length >= 60)
+      return "丁寧に言葉にできました。今日はここで区切って、休んでください。";
+    return "いまは結論を出さなくて大丈夫。気になりは、置いておくだけで整うこともあります。";
+  }
+
+  function encouragementMessage(){
+    const today = new Date();
+    const days = new Set();
+    for (const e of entries){
+      const d = new Date(e.date + "T00:00:00");
+      const diff = (today - d) / (1000*60*60*24);
+      if(diff >= 0 && diff <= 7) days.add(e.date);
+    }
+    const count = days.size;
+    if(count === 0) return "最近、何も書いていなくても大丈夫です。";
+    if(count <= 2) return "思い出したときに開いている感じ、ちょうどいいですね。";
+    if(count <= 4) return "無理なく続いていますね。";
+    return "よく開いていますね。でも、毎日じゃなくて大丈夫ですよ。";
+  }
+
+  // 下書き
+  function loadDraft(){
+    try{ return (loadPrefs().draft) || null; }catch{ return null; }
+  }
+  function saveDraft(draft){
+    const p = loadPrefs();
+    p.draft = draft;
+    savePrefs(p);
+  }
+  function clearDraft(){
+    const p = loadPrefs();
+    delete p.draft;
+    savePrefs(p);
+  }
+  function restoreDraftToUI(){
+    const d = loadDraft();
+    if(!d) return;
+    if(d.date) el.entryDate.value = d.date;
+    if(d.tag){
+      selectedTag = d.tag;
+      updateTagUI();
+    }
+    if(typeof d.note === "string"){
+      el.note.value = d.note;
+      updateChar();
+    }
+  }
+
+  // タグ変更（入力なし）
+  function openTagSelect(id){
+    tagChangeTargetId = id;
+    el.tagSelectRow.innerHTML = "";
+
+    TAGS.forEach(t => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "pill";
+      b.textContent = t;
+      b.addEventListener("click", () => {
+        if(tagChangeTargetId){
+          updateEntry(tagChangeTargetId, { tag: t });
+          showToast("タグを変更しました");
+        }
+        tagChangeTargetId = null;
+        setOverlay(el.tagSelectOverlay, false);
+        render();
+      });
+      el.tagSelectRow.appendChild(b);
+    });
+
+    setOverlay(el.tagSelectOverlay, true);
+  }
+  el.tagSelectCancelBtn.addEventListener("click", () => {
+    tagChangeTargetId = null;
+    setOverlay(el.tagSelectOverlay, false);
+  });
+
+  // Pro（デモ）
+  function buildProReportText(){
+    const now = new Date();
+    const withinDays = (iso, days) => {
+      const d = new Date(iso + "T00:00:00");
+      return (now - d) / (1000*60*60*24) <= days;
+    };
+
+    const last30 = entries.filter(e => withinDays(e.date, 31));
+    const tagCount = new Map();
+    let todoCount = 0;
+    for(const e of last30){
+      tagCount.set(e.tag, (tagCount.get(e.tag) || 0) + 1);
+      if(!e.text || !e.text.trim()) todoCount++;
+    }
+    const sorted = [...tagCount.entries()].sort((a,b)=>b[1]-a[1]);
+    const topA = sorted[0]?.[0] ?? "（まだありません）";
+    const topB = sorted[1]?.[0] ?? "";
+
+    const tendencyLine = (topB)
+      ? `この期間は、「${topA}」と「${topB}」に関する気になりが、少し多めです。`
+      : `この期間は、「${topA}」に関する気になりが、少し多めです。`;
+
+    const total = last30.length;
+    const todoRate = total ? Math.round((todoCount/total)*100) : 0;
+    const todoLine = total
+      ? `最近は、タグだけで置かれている気になりが、${todoRate}%ほどあります。\n言葉にしないまま残しているものが、今はちょうどよい距離感なのかもしれません。`
+      : `最近は、言葉にしないまま置いている気になりが多いようです。`;
+
+    return [
+`このレポートは、これまで記録してきた「気になり」を少し離れたところから眺めるためのものです。
+正解も、評価も、アドバイスもありません。今の状態を、言葉でそっと写しています。`,
+`【最近の気になりの傾向】
+${tendencyLine}
+特定の出来事というより、日常の中で引っかかる感覚が、繰り返し現れているようです。`,
+`【感情の動きについて】
+記録された言葉全体から見ると、少し疲れが出やすい時期かもしれません。
+強い感情というよりも、小さな違和感が積み重なっている印象があります。`,
+`【言葉にしていない気になり】
+${todoLine}`,
+`【この期間のまとめ】
+今月は、外の出来事よりも、自分の内側に向いた気になりを多く拾っていました。
+急いで整理しなくても、こうして一度眺められただけで、十分なこともあります。`,
+`【おわりに】
+このレポートは、変わるためのものではなく、立ち止まるためのものです。
+また気になったら、いつものように、置いておいてください。`
+    ].join("\n\n");
+  }
+
+  function isPro(){ return !!prefs.isPro; }
+  function setPro(flag){
+    prefs.isPro = !!flag;
+    savePrefs(prefs);
+    render();
+  }
+
+  // Welcome
+  function maybeShowWelcome(){
+    if(prefs.seenWelcome) return;
+    prefs.seenWelcome = true;
+    savePrefs(prefs);
+    el.welcomeCard.style.display = "block";
+    window.scrollTo({top:0, behavior:"instant"});
+  }
+  el.welcomeCloseBtn.addEventListener("click", () => {
+    el.welcomeCard.style.display = "none";
+  });
+
+  // スクロール＆ハイライト
+  function flashOnce(node, className){
+    if(!node) return;
+    node.classList.remove(className);
+    void node.offsetWidth;
+    node.classList.add(className);
+    setTimeout(() => node.classList.remove(className), 1400);
+  }
+
+  // 日付を開いた直後、未追記ログだけ強調
+  function emphasizeTodosInDate(dateIso){
+    const nodes = el.list.querySelectorAll(`.item.todo[data-date="${dateIso}"]`);
+    nodes.forEach(n => {
+      n.classList.remove("todoPulse");
+      void n.offsetWidth;
+      n.classList.add("todoPulse");
+      setTimeout(()=>n.classList.remove("todoPulse"), 1400);
+    });
+  }
+
+  function scrollToDateSection(isoDate, emphasizeTodos=false){
+    requestAnimationFrame(() => {
+      if(groupByDate){
+        const itemsWrap = el.list.querySelector(`.dateGroupItems[data-date="${isoDate}"]`);
+        const header = el.list.querySelector(`.dateHeader[data-date="${isoDate}"]`);
+
+        // 折りたたまれていたら自動展開
+        if(itemsWrap && itemsWrap.classList.contains("collapsed")){
+          itemsWrap.classList.remove("collapsed");
+          setCollapsed(isoDate, false);
+          if(header){
+            const caretEl = header.querySelector(".dateCaret");
+            if(caretEl) caretEl.textContent = "－";
+          }
+        }
+
+        if(header){
+          header.scrollIntoView({ behavior:"smooth", block:"start" });
+          setTimeout(()=>flashOnce(header, "flash"), 420);
+          if(emphasizeTodos){
+            setTimeout(()=>emphasizeTodosInDate(isoDate), 520);
+          }
+          return;
+        }
+      }
+
+      const selected = el.list.querySelector(".item.selected");
+      if(selected){
+        selected.scrollIntoView({ behavior:"smooth", block:"start" });
+        setTimeout(()=>flashOnce(selected, "flashItem"), 420);
+      }
+    });
+  }
+
+  // 未追記フィルタ時：全部折りたたみ→最新未追記日だけ展開
+  function collapseAllDateGroups(){
+    const dates = [...new Set(entries.map(e => e.date))];
+    dates.forEach(d => { collapsedByDate[d] = true; });
+    saveCollapsed();
+  }
+  function openNewestTodoDate(){
+    const todos = entries.filter(e => !e.text || !e.text.trim());
+    if(todos.length === 0) return null;
+
+    const newestDate = [...new Set(todos.map(e => e.date))]
+      .sort((a,b)=>b.localeCompare(a))[0];
+
+    collapsedByDate[newestDate] = false;
+    saveCollapsed();
+    return newestDate;
+  }
+
+  // 入力側タグ
+  TAGS.forEach(t => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "pill";
+    b.textContent = t;
+    b.dataset.tag = t;
+    b.addEventListener("click", () => {
+      selectedTag = t;
+      updateTagUI();
+      showToast(`タグ「${t}」を選びました`);
+    });
+    el.tagRow.appendChild(b);
+  });
+
+  function ensureTag(){
+    if(!selectedTag){
+      showToast("タグを選んでください");
+      return false;
+    }
+    return true;
+  }
+
+  // 入力コントロール
+  el.saveDraftBtn.addEventListener("click", () => {
+    const draft = {
+      date: selectedEntryDateISO(),
+      tag: selectedTag || null,
+      note: el.note.value || ""
+    };
+    saveDraft(draft);
+    showToast("下書きを保存しました");
+  });
+
+  el.commitBtn.addEventListener("click", () => {
+    if(!ensureTag()) return;
+
+    const text = (el.note.value || "").trim(); // 空でもOK
+    const e = addEntry(selectedTag, text);
+
+    el.feedback.style.display = "block";
+    el.feedback.textContent = feedbackFor(e.tag, e.text);
+    showToast("ログに追加しました");
+
+    // 入力欄クリア
+    el.note.value = "";
+    updateChar();
+    selectedTag = null;
+    updateTagUI();
+    clearDraft();
+
+    render();
+    scrollToDateSection(e.date, true);
+  });
+
+  // Filters
+  el.filterAllBtn.addEventListener("click", () => {
+    filterMode = "all";
+    render();
+  });
+
+  el.filterTodoBtn.addEventListener("click", () => {
+    filterMode = "todo";
+
+    if(groupByDate){
+      collapseAllDateGroups();
+      const d = openNewestTodoDate();
+      render();
+      if(d) scrollToDateSection(d, true);
+      return;
+    }
+
+    render();
+  });
+
+  el.groupByDateBtn.addEventListener("click", () => {
+    groupByDate = !groupByDate;
+    render();
+  });
+
+  // Export (TSV) - copy first
+  el.exportBtn.addEventListener("click", async () => {
+    const data = [...entries].sort((a,b)=> (a.date !== b.date) ? a.date.localeCompare(b.date) : (a.createdAt - b.createdAt));
+    const lines = data.map(e => {
+      const body = (e.text && e.text.trim()) ? e.text.trim().replace(/\n/g," ") : "";
+      return `${e.date}\t${e.tag}\t${body}`;
+    });
+    const header = "date\ttag\ttext";
+    const out = [header, ...lines].join("\n");
+    try{
+      await navigator.clipboard.writeText(out);
+      showToast("コピーしました（貼り付けOK）");
+    }catch{
+      const blob = new Blob([out], {type:"text/plain;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "kininari_export.tsv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("TSVを保存しました");
+    }
+  });
+
+  // 全削除（2段階）
+  function openWipeOverlay(){
+    document.getElementById("wipeStep1").style.display = "block";
+    document.getElementById("wipeStep2").style.display = "none";
+    el.wipeConfirmInput.value = "";
+    el.wipeConfirmBtn.disabled = true;
+    setOverlay(el.wipeOverlay, true);
+  }
+  function closeWipeOverlay(){ setOverlay(el.wipeOverlay, false); }
+
+  el.wipeBtn.addEventListener("click", openWipeOverlay);
+  el.wipeCancelBtn.addEventListener("click", closeWipeOverlay);
+  el.wipeNextBtn.addEventListener("click", () => {
+    document.getElementById("wipeStep1").style.display = "none";
+    document.getElementById("wipeStep2").style.display = "block";
+    el.wipeConfirmInput.focus();
+  });
+  el.wipeBackBtn.addEventListener("click", () => {
+    document.getElementById("wipeStep1").style.display = "block";
+    document.getElementById("wipeStep2").style.display = "none";
+  });
+  el.wipeConfirmInput.addEventListener("input", () => {
+    el.wipeConfirmBtn.disabled = ((el.wipeConfirmInput.value || "").trim() !== "削除");
+  });
+  el.wipeConfirmBtn.addEventListener("click", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    entries = [];
+    selectedId = null;
+    el.note.value = "";
+    updateChar();
+    el.feedback.style.display = "none";
+    closeWipeOverlay();
+    showToast("全削除しました");
+    render();
+  });
+
+  // Pro flows
+  el.proBtn.addEventListener("click", () => {
+    if(isPro()){
+      el.proReportText.textContent = buildProReportText();
+      setOverlay(el.proReportOverlay, true);
+    } else {
+      setOverlay(el.proGateOverlay, true);
+    }
+  });
+
+  el.proGateBackBtn.addEventListener("click", () => {
+    setOverlay(el.proGateOverlay, false);
+    el.feedback.style.display = "block";
+    el.feedback.textContent = "今は、置いておくだけで十分です。\nまた気になったら、ここに戻ってきてください。";
+    showToast("今はここまでで大丈夫です");
+  });
+
+  el.proGateOpenBtn.addEventListener("click", () => {
+    setOverlay(el.proGateOverlay, false);
+    setOverlay(el.subscribeOverlay, true);
+  });
+
+  el.subscribeCloseBtn.addEventListener("click", () => {
+    setOverlay(el.subscribeOverlay, false);
+    el.feedback.style.display = "block";
+    el.feedback.textContent =
+      "このアプリは、\n無料のままでも、きちんと使えます。\n気になりは、置いておくだけで十分な日もあります。";
+    showToast("今はここまでで大丈夫です");
+  });
+
+  el.subscribeEnableBtn.addEventListener("click", () => {
+    setOverlay(el.subscribeOverlay, false);
+    setPro(true);
+    el.proReportText.textContent = buildProReportText();
+    setOverlay(el.proReportOverlay, true);
+    showToast("（デモ）Proを有効にしました");
+  });
+
+  const closeProReport = () => setOverlay(el.proReportOverlay, false);
+  el.proReportCloseBtn.addEventListener("click", closeProReport);
+  el.proReportCloseTopBtn.addEventListener("click", closeProReport);
+
+  el.encourageBadge.addEventListener("click", () => {
+    if(!isPro()) return;
+    setOverlay(el.cancelOverlay, true);
+  });
+
+  el.cancelBackBtn.addEventListener("click", () => setOverlay(el.cancelOverlay, false));
+  el.cancelConfirmBtn.addEventListener("click", () => {
+    setOverlay(el.cancelOverlay, false);
+    setPro(false);
+    showToast("（デモ）Proを無効にしました");
+  });
+
+  // ログ描画
+  function renderItem(e){
+    const todo = (!e.text || !e.text.trim());
+
+    const card = document.createElement("div");
+    card.className = "item" + (e.id === selectedId ? " selected" : "") + (todo ? " todo" : "");
+    card.dataset.date = e.date;
+
+    card.addEventListener("click", () => {
+      select(e.id);
+      render();
+    });
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    const date = document.createElement("div");
+    date.className = "date";
+    date.textContent = toJPDate(e.date);
+
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.textContent = e.tag;
+
+    meta.appendChild(date);
+    meta.appendChild(tag);
+
+    if(todo){
+      const flag = document.createElement("div");
+      flag.className = "flag";
+      flag.textContent = "未追記";
+      meta.appendChild(flag);
+    }
+
+    const text = document.createElement("div");
+    text.className = "text";
+    text.textContent = todo ? "（本文なし）" : e.text.trim();
+
+    const fb = document.createElement("div");
+    fb.className = "smalltxt";
+    fb.textContent = feedbackFor(e.tag, e.text);
+
+    const btnRow = document.createElement("div");
+    btnRow.className = "row";
+    btnRow.style.marginTop = "10px";
+
+    const quickTag = document.createElement("button");
+    quickTag.className = "small";
+    quickTag.textContent = "タグ変更";
+    quickTag.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      openTagSelect(e.id);
+    });
+
+    const del = document.createElement("button");
+    del.className = "small danger";
+    del.textContent = "削除";
+    del.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      if(confirm("このログを削除しますか？")){
+        deleteEntry(e.id);
+        showToast("削除しました");
+        render();
+      }
+    });
+
+    btnRow.appendChild(quickTag);
+    btnRow.appendChild(del);
+
+    card.appendChild(meta);
+    card.appendChild(text);
+    card.appendChild(fb);
+    card.appendChild(btnRow);
+
+    return card;
+  }
+
+  function render(){
+    clampDateRange();
+
+    el.filterAllBtn.style.background = (filterMode==="all") ? "rgba(243,214,198,.85)" : "rgba(255,230,210,.65)";
+    el.filterTodoBtn.style.background = (filterMode==="todo") ? "rgba(243,214,198,.85)" : "rgba(255,230,210,.65)";
+    el.groupByDateBtn.style.background = groupByDate ? "rgba(243,214,198,.85)" : "rgba(255,230,210,.65)";
+    el.filterHint.textContent = `${filterMode==="todo" ? "未追記のみ" : "すべて"} / ${groupByDate ? "日付ごと" : "通常"} 表示中`;
+
+    el.streakBadge.textContent = `連続記録：${calcStreak()}日`;
+    const sel = getSelected();
+    el.selectedBadge.textContent = sel ? `選択中：${toJPDate(sel.date)} / ${sel.tag}` : "選択中：なし";
+
+    el.encourageBadge.textContent = isPro()
+      ? "Pro：有効（タップで解約）"
+      : encouragementMessage();
+
+    // 常に日付順（新しい日付→古い日付）／同日内は新しい順
+    let view = [...entries].sort((a,b) => {
+      if(a.date !== b.date) return b.date.localeCompare(a.date);
+      return b.createdAt - a.createdAt;
+    });
+
+    if(filterMode === "todo") view = view.filter(e => !e.text || !e.text.trim());
+    el.countLabel.textContent = `${view.length}件`;
+
+    el.list.innerHTML = "";
+
+    if(!groupByDate){
+      view.forEach(e => el.list.appendChild(renderItem(e)));
+    }else{
+      const map = new Map();
+      for(const e of view){
+        if(!map.has(e.date)) map.set(e.date, []);
+        map.get(e.date).push(e);
+      }
+      const dates = [...map.keys()].sort((a,b)=> b.localeCompare(a));
+
+      for(const d of dates){
+        const group = map.get(d).sort((a,b)=>b.createdAt-a.createdAt);
+
+        const header = document.createElement("div");
+        header.className = "dateHeader";
+        header.dataset.date = d;
+
+        const caret = isCollapsed(d) ? "＋" : "－";
+        header.innerHTML = `
+          <div class="leftWrap">
+            <span class="dateCaret">${caret}</span>
+            <span>${toJPDate(d)}</span>
+          </div>
+          <div class="right">${group.length}件</div>
+        `;
+
+        const itemsWrap = document.createElement("div");
+        itemsWrap.className = "dateGroupItems" + (isCollapsed(d) ? " collapsed" : "");
+        itemsWrap.dataset.date = d;
+
+        header.addEventListener("click", () => {
+          const nowCollapsed = itemsWrap.classList.toggle("collapsed");
+          setCollapsed(d, nowCollapsed);
+          header.querySelector(".dateCaret").textContent = nowCollapsed ? "＋" : "－";
+          if(!nowCollapsed){
+            setTimeout(()=>emphasizeTodosInDate(d), 120);
+          }
+        });
+
+        el.list.appendChild(header);
+        el.list.appendChild(itemsWrap);
+
+        group.forEach(e => itemsWrap.appendChild(renderItem(e)));
+      }
+    }
+
+    updateChar();
+    updateTagUI();
+  }
+
+  // init
+  clampDateRange();
+  restoreDraftToUI();
+  render();
+  maybeShowWelcome();
+})();
+</script>
+</body>
+</html>
